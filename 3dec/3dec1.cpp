@@ -7,28 +7,17 @@
 
 using namespace std;
 
-long long sign(long long arg) {
-    return arg < 0 ? -1 : arg > 0 ? 1 : 0;
-}
-
 struct point {
     long long x, y;
     point() {} // empty constructor
     point(long long x, long long y): x(x), y(y) {}
-    pair<long long, long long> to_pair() const {
-        return { x, y };
-    }
 
-    long long manhattan() const {
-        return abs(x) + abs(y);
-    }
+    pair<long long, long long> to_pair() const { return { x, y }; }
 
-    bool operator<(const point& other) const {
-         return manhattan() < other.manhattan();
-    }
-    bool operator==(const point& other) const {
-        return to_pair() == other.to_pair();
-    }
+    long long manhattan() const { return abs(x) + abs(y); }
+
+    bool operator<(const point& other) const { return manhattan() < other.manhattan(); }
+    bool operator==(const point& other) const { return to_pair() == other.to_pair(); }
 };
 
 struct line {
