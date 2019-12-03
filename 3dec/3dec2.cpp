@@ -18,20 +18,14 @@ struct point {
     long long x, y;
     point() {} // empty constructor
     point(long long x, long long y): x(x), y(y) {}
-    pair<long long, long long> to_pair() const {
-        return { x, y };
-    }
+    pair<long long, long long> to_pair() const { return { x, y }; }
 
-    long long manhattan() const {
-        return abs(x) + abs(y);
-    }
+    long long manhattan() const { return abs(x) + abs(y); }
 
     bool operator<(const point& other) const {
-         return value_a[to_pair()] + value_b[to_pair()] < value_a[other.to_pair()] + value_b[other.to_pair()];
+        return value_a[to_pair()] + value_b[to_pair()] < value_a[other.to_pair()] + value_b[other.to_pair()];
     }
-    bool operator==(const point& other) const {
-        return to_pair() == other.to_pair();
-    }
+    bool operator==(const point& other) const { return to_pair() == other.to_pair(); }
 };
 
 struct line {
@@ -39,16 +33,10 @@ struct line {
     line(point a, point b): start(a), end(b) {}
     line() {} // empty constructor
 
-    long long length() const {
-        return abs(start.x - end.x) + abs(start.y - end.y);
-    }
+    long long length() const { return abs(start.x - end.x) + abs(start.y - end.y); }
 
-    long long dx() const {
-        return sign(end.x-start.x);
-    }
-    long long dy() const {
-        return sign(end.y-start.y);
-    }
+    long long dx() const { return sign(end.x-start.x); }
+    long long dy() const { return sign(end.y-start.y); }
 
     // everything except starting point
     vector<point> to_points() const {
@@ -59,6 +47,26 @@ struct line {
             ret.push_back({ x + i*dx(), y + i*dy() });
         }
         return ret;
+    }
+
+    bool intersects(const line& other, point& ref) {
+        // assume lines are never parallel and overlapping
+        if (start.x == end.x && other.start.x == other.end.x || start.y == end.y && other.start.y == other.end.y) {
+            return false;
+        }
+
+        // assume one line is horizontal and the other vertical
+        auto horizontal = start.x == end.x ? other : *this;
+        auto vertical = start.y == end.y ? other : *this;
+
+        // cases where the lines do not overlap
+        if (horizontal.start.x < vertical.start.x && horizontal.end.x < vertical.end.x || horizontal.start.x > vertical.start.x && horizontal.end.x > vertical.end.x) return false;
+        if (horizontal.start.y < vertical.start.y && horizontal.end.y < vertical.end.y || horizontal.start.y > vertical.start.y && horizontal.end.y > vertical.end.y) return false;
+
+        // else, the lines intersect
+        ref.x = vertical.start.x;
+        ref.y = horizontal.start.y;
+        return true;
     }
 };
 
@@ -103,22 +111,6 @@ void parse_line(vector<point>& points, const string& s) {
 }
 
 
-// puts intersection point in ref
-// return true if intersects
-bool intersects(point& ref, const line& a, const line& b) {
-    // assume lines are never parallel and overlapping
-    if (a.start.x == a.end.x && b.start.x == b.end.x || a.start.y == a.end.y && b.start.y == b.end.y) {
-        return false;
-    }
-    auto horizontal = a.start.x == a.end.x ? b : a;
-    auto vertical = a.start.y == a.end.y ? b : a;
-    if (horizontal.start.x < vertical.start.x && horizontal.end.x < vertical.end.x || horizontal.start.x > vertical.start.x && horizontal.end.x > vertical.end.x) return false;
-    if (horizontal.start.y < vertical.start.y && horizontal.end.y < vertical.end.y || horizontal.start.y > vertical.start.y && horizontal.end.y > vertical.end.y) return false;
-    ref.x = vertical.start.x;
-    ref.y = horizontal.start.y;
-    return true;
-}
-
 int main() {
     vector<point> points_a;
     vector<point> points_b;
@@ -129,25 +121,21 @@ int main() {
 
     getline(cin, l);
     parse_line(points_b, l);
-    cout << "HI" << endl;
 
     vector<point> intersections;
 
-    cout << points_a.size() << endl;
-    cout << points_b.size() << endl;
     path a(points_a);
     path b(points_b);
     vector<point> a_points = a.to_points();
     vector<point> b_points = b.to_points();
-    cout << a_points.size() << endl;
-    cout << b_points.size() << endl;
 
     for (auto& l1: a.lines) {
         for (auto& l2: b.lines) {
             point p;
 
-            if (intersects(p, l1, l2)) {
+            if (l1.intersects(l2, p)) {
                 intersections.push_back(p);
+
                 auto x = p.to_pair();
 
                 if (value_a.find(x) == value_a.end()) {
@@ -158,9 +146,6 @@ int main() {
                     auto it = find(b_points.begin(), b_points.end(), p);
                     value_b[x] = distance(b_points.begin(), it);
                 }
-
-                cout << "Sum steps: " << value_a[x] + value_b[x] << endl;
-                cout << endl;
             }
         }
     }
