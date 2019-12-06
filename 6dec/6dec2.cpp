@@ -7,25 +7,15 @@ using namespace std;
 map<string, string> parent;
 
 long long depth(long long depthsofar, const string& k) {
-    if (k.size() == 0) {
-        return depthsofar;
-    }
+    if (k.size() == 0) return depthsofar;
     return depth(depthsofar+1, parent[k]);
 }
 
-string common_ancestor(const string& a, const string& b) {
-    auto da = depth(0, a);
-    auto db = depth(0, b);
-    auto maxnode = da < db ? b : a;
-    auto othernode = da < db ? a : b;
-    for (long long i = min(da,db); i < max(da,db); i++) {
-        maxnode = parent[maxnode];
-    }
-    while (maxnode != othernode) {
-        maxnode = parent[maxnode];
-        othernode = parent[othernode];
-    }
-    return maxnode;
+string common_ancestor(long long d1, long long d2, const string& a, const string& b) {
+    if (a == b) return a;
+    if (d1 > d2) return common_ancestor(d1-1, d2, parent[a], b);
+    if (d2 > d1) return common_ancestor(d1, d2-1, a, parent[b]);
+    return common_ancestor(d1-1,d2-1, parent[a], parent[b]);
 }
 
 int main() {
@@ -37,7 +27,10 @@ int main() {
         parent[b] = a;
     }
 
-    auto ca = common_ancestor("YOU", "SAN");
+    auto d1 = depth(0, "YOU");
+    auto d2 = depth(0, "SAN");
+    auto ca = common_ancestor(d1,d2,"YOU", "SAN");
+    auto d3 = depth(0, ca);
     cout << ca << endl;
-    cout << depth(0, "YOU") + depth(0, "SAN") - 2*depth(0, ca) - 2 << endl;
+    cout << d1 + d2 - 2*d3 - 2 << endl;
 }
